@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Threat Campaign Aggregator</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #2b2b2b;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        th {
+            background-color: #333;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #3c3c3c;
+        }
+
+        a {
+            color: #6495ed;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .status-form {
+            display: inline-block;
+        }
+
+        .status-dropdown {
+            padding: 6px;
+            border-radius: 4px;
+        }
+
+        .update-btn {
+            padding: 6px 12px;
+            background-color: #6495ed;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Threat Campaign Aggregator</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Date of Publication</th>
+                <th>Date Added</th>
+                <th>Link</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th>Update Status</th> <!-- New column for updating status -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for article in articles[::-1] %}
+            <tr>
+                <td>{{ article.id }}</td>
+                <td>{{ article.title }}</td>
+                <td>{{ article.date }}</td>
+                <td>{{ article.date_added}}</td>
+                <td><a href="{{ article.link }}" target="_blank">{{ article.link }}</a></td>
+                <td>{{ article.source }}</td>
+                <td>{{ article.status }}</td>
+                <td>
+                    <form class="status-form" action="{{ url_for('views.update_status', article_id=article.id) }}" method="POST">
+                        <select class="status-dropdown" name="status">
+                            <option value="New" {% if article.status == 'New' %} selected {% endif %}>New</option>
+                            <option value="In Progress" {% if article.status == 'In Progress' %} selected {% endif %}>In Progress</option>
+                            <option value="Published" {% if article.status == 'Published' %} selected {% endif %}>Published</option>
+                            <option value="Discarded" {% if article.status == 'Discarded' %} selected {% endif %}>Discarded</option>
+                        </select>
+                        <button class="update-btn" type="submit">Update</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

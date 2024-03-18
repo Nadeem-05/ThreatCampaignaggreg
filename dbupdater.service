@@ -1,0 +1,13 @@
+[Unit]
+Description=Runs Db Updation Script
+After=network.target
+
+[Service]
+User=nadeem
+Group=nadeem
+WorkingDirectory=/home/nadeem/Desktop/Intern/rssfeed-aggreg/
+Environment="PATH=/home/nadeem/Desktop/Intern/rssfeed-aggreg/venv/bin"
+ExecStart=/home/nadeem/Desktop/Intern/rssfeed-aggreg/venv/bin/python3 /home/nadeem/Desktop/Intern/rssfeed-aggreg/dbupdater.py
+
+[Install]
+WantedBy=multi-user.target

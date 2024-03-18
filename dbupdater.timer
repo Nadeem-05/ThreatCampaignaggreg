@@ -1,0 +1,8 @@
+[Unit]
+Description=Run Db updation script Every 1 hour
+[Timer]
+OnCalendar=*-*-* *:00:00
+Unit=dbupdater.service
+
+[Install]
+WantedBy=timers.target
