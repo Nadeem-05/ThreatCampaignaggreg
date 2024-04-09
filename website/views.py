@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template,redirect,url_for,request,current_app
+from flask import Blueprint, render_template,redirect,url_for,request,current_app,jsonify
 from . import db
 from .rss_manager import RssManager
 from .modals import Rssfeed
@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 import re
 import time
 from dotenv import load_dotenv
+import json
 load_dotenv() 
   
 TUNE_API_KEY = os.environ.get("TUNE_API_KEY")
@@ -76,6 +77,19 @@ def index():
 def home_page():
     articles = Rssfeed.query.all()
     return render_template("rss_table.html", articles=articles)
+
+@views.route("/json", methods=["GET"])
+def json_page():
+    query = request.args.get('query')
+    if query:
+        articles = Rssfeed.query.filter(Rssfeed.title.ilike(f"%{query}%")).all()
+    else:
+        articles = Rssfeed.query.all()
+    
+    article_dicts = [{'id': article.id, 'title': article.title, 'date': article.date,
+                      'date_added': article.date_added, 'link': article.link,
+                      'source': article.source, 'status': article.status} for article in articles]
+    return jsonify(article_dicts)
 
 @views.route("/update_status/<int:article_id>", methods=["POST"])
 def update_status(article_id):
