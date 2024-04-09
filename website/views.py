@@ -11,6 +11,8 @@ import re
 import time
 from dotenv import load_dotenv
 import json
+import ast
+
 load_dotenv() 
   
 TUNE_API_KEY = os.environ.get("TUNE_API_KEY")
@@ -81,14 +83,24 @@ def home_page():
 @views.route("/json", methods=["GET"])
 def json_page():
     query = request.args.get('query')
+    times = request.args.get('time')  # Get list of times
+    times = list(times)
+    print(list(times))
+    articles_query = Rssfeed.query
     if query:
-        articles = Rssfeed.query.filter(Rssfeed.title.ilike(f"%{query}%")).all()
-    else:
-        articles = Rssfeed.query.all()
+        articles_query = articles_query.filter(Rssfeed.title.ilike(f"%{query}%"))
     
+    if times:
+        filtered_articles = []
+        for time_str in times:
+            articles_filtered_by_time = articles_query.filter(Rssfeed.date_added.ilike(f"%{time_str}%")).all()
+            filtered_articles.extend(articles_filtered_by_time)
+    else:
+        filtered_articles = articles_query.all()
+
     article_dicts = [{'id': article.id, 'title': article.title, 'date': article.date,
                       'date_added': article.date_added, 'link': article.link,
-                      'source': article.source, 'status': article.status} for article in articles]
+                      'source': article.source, 'status': article.status} for article in filtered_articles]
     return jsonify(article_dicts)
 
 @views.route("/update_status/<int:article_id>", methods=["POST"])
