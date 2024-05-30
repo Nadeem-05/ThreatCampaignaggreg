@@ -62,7 +62,9 @@ def update_database():
             "https://bishopfox.com/feeds/advisories.rss",
             "https://blog.morphisec.com/rss.xml",
             "https://securityonline.info/feed/",
-            "https://orca.security/feed/"
+            "https://orca.security/feed/",
+            "https://www.forcepoint.com/rss.xml",
+            "https://www.netskope.com/feed",
         ]
         rss_manager = RssManager(app, rss_feed_list)
         print("Fetchind data from Alienvault")

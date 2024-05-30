@@ -1,8 +1,67 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Threat Campaign Aggregator</title>
     <style>
+        .filter-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            /* Allow items to wrap to the next line */
+        }
+
+        .filter-group {
+            flex: 1;
+            /* Allow the filter groups to grow and fill the space */
+            max-width: calc(33% - 10px);
+            /* Limit the maximum width to create some space between filter groups */
+            margin-right: 20px;
+            /* Margin between each filter */
+            margin-bottom: 20px;
+            /* Margin at the bottom of each filter group */
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .filter-group input[type="date"] {
+            width: calc(100% - 16px);
+            /* Adjust for date input padding */
+        }
+
+
+        #searchBtn {
+            padding: 8px 16px;
+            background-color: #6495ed;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-top: 25px;
+            /* Move the button down slightly */
+        }
+
+        #searchBtn:hover {
+            background-color: #4169e1;
+        }
+
+
         body {
             background-color: #1a1a1a;
             color: #f0f0f0;
@@ -16,7 +75,8 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
         }
 
-        th, td {
+        th,
+        td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #444;
@@ -57,10 +117,89 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .pagination a,
+        .pagination strong {
+            padding: 6px 12px;
+            margin: 0 4px;
+            border-radius: 4px;
+            background-color: #6495ed;
+            color: #ffffff;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .pagination a:hover {
+            background-color: #4169e1;
+        }
+
+        .pagination strong {
+            background-color: #4169e1;
+        }
     </style>
 </head>
+
 <body>
     <h1>Threat Campaign Aggregator</h1>
+
+    <form id="filterForm" method="post">
+        <div class="filter-container">
+            <div class="filter-group">
+                <label for="titleFilter">Title Filter:</label>
+                <input type="text" id="titleFilter" name="titleFilter" placeholder="Filter title...">
+            </div>
+
+            <div class="filter-group">
+                <label for="statusFilter">Status Filter:</label>
+                <select class="status-dropdown" name="statusFilter" id="statusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="New">New</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Published">Published</option>
+                    <option value="Discarded">Discarded</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="dateAddedFilter">Date Added Filter:</label>
+                <input type="date" id="dateAddedFilter" name="dateAddedFilter" placeholder="Select date...">
+            </div>
+
+            <div class="filter-group">
+                <button type="submit" id="searchBtn">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <br />
+    <div class="pagination">
+        {% if articles.has_prev %}
+        <a href="{{ url_for('views.home_page', page=articles.prev_num) }}">Previous</a>
+        {% endif %}
+
+        {% for num in articles.iter_pages() %}
+        {% if num %}
+        {% if num == articles.page %}
+        <strong>{{ num }}</strong>
+        {% else %}
+        <a href="{{ url_for('views.home_page', page=num) }}">{{ num }}</a>
+        {% endif %}
+        {% else %}
+        <span class="ellipsis">...</span>
+        {% endif %}
+        {% endfor %}
+
+        {% if articles.has_next %}
+        <a href="{{ url_for('views.home_page', page=articles.next_num) }}">Next</a>
+        {% endif %}
+    </div>
+    <br />
     <table>
         <thead>
             <tr>
@@ -75,7 +214,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for article in articles[::-1] %}
+            {% for article in articles.items %}
             <tr>
                 <td>{{ article.id }}</td>
                 <td>{{ article.title }}</td>
@@ -85,12 +224,18 @@
                 <td>{{ article.source }}</td>
                 <td>{{ article.status }}</td>
                 <td>
-                    <form class="status-form" action="{{ url_for('views.update_status', article_id=article.id) }}" method="POST">
+                    <form class="status-form" action="{{ url_for('views.update_status', article_id=article.id) }}"
+                        method="POST">
                         <select class="status-dropdown" name="status">
-                            <option value="New" {% if article.status == 'New' %} selected {% endif %}>New</option>
-                            <option value="In Progress" {% if article.status == 'In Progress' %} selected {% endif %}>In Progress</option>
-                            <option value="Published" {% if article.status == 'Published' %} selected {% endif %}>Published</option>
-                            <option value="Discarded" {% if article.status == 'Discarded' %} selected {% endif %}>Discarded</option>
+                            <option value="New" {% if article.status=='New' %} selected {% endif %}>New</option>
+                            <option value="In Progress" {% if article.status=='In Progress' %} selected {% endif %}>In
+                                Progress</option>
+                            <option value="Published" {% if article.status=='Published' %} selected {% endif %}>
+                                Published
+                            </option>
+                            <option value="Discarded" {% if article.status=='Discarded' %} selected {% endif %}>
+                                Discarded
+                            </option>
                         </select>
                         <button class="update-btn" type="submit">Update</button>
                     </form>
@@ -99,6 +244,6 @@
             {% endfor %}
         </tbody>
     </table>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
+
 </html>

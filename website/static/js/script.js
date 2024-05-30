@@ -1,12 +1,11 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const scrollPosition = "{{ scroll_position }}";
     if (scrollPosition) {
         window.scrollTo(0, scrollPosition);
     }
 });
 
-
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const tableRows = document.querySelectorAll('tbody tr');
     const headers = document.querySelectorAll('th');
 
@@ -23,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tableRows.forEach(row => {
             let match = false;
             Array.from(row.cells).forEach((cell, cellIndex) => {
-                if (cellIndex !== headers.length - 1) { 
+                if (cellIndex !== headers.length - 1) {
                     const text = cell.innerText.toLowerCase();
                     if (text.includes(filter)) {
                         match = true;

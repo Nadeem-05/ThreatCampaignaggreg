@@ -2,16 +2,12 @@ from flask import Blueprint, render_template,redirect,url_for,request,current_ap
 from . import db
 from .rss_manager import RssManager
 from .modals import Rssfeed
-import requests
-import os
+from sqlalchemy import or_, and_
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from bs4 import BeautifulSoup
-import re
-import time
+import time , re, json, datetime, ast, os, requests 
 from dotenv import load_dotenv
-import json
-import ast
 
 load_dotenv() 
   
@@ -75,10 +71,41 @@ def index():
             return render_template('error.html', error=error_msg)
     return render_template('index.html')
 
-@views.route("/", methods=["GET"])
+@views.route("/", methods=["GET", "POST"])
 def home_page():
-    articles = Rssfeed.query.all()
+    page = request.args.get('page', 1, type=int)  # Get page number from request arguments
+    per_page = 30  # Number of articles per page
+
+    articles_query = Rssfeed.query.order_by(Rssfeed.id.desc())
+    status_filter = ""
+    date_added_filter = ""
+    title_filter   = ""
+    if request.method == "POST":
+        status_filter = request.form.get("statusFilter", "").lower()
+        date_added_filter = request.form.get("dateAddedFilter", "")
+        title_filter = request.form.get("titleFilter", "")
+
+        if date_added_filter:
+            date_obj = datetime.datetime.strptime(date_added_filter, '%Y-%m-%d')
+            date_added_filter = date_obj.strftime('%d %b %Y')
+
+        if status_filter and status_filter.lower() != "all statuses":
+            articles_query = articles_query.filter(Rssfeed.status.ilike(f"{status_filter}%"))
+
+        if date_added_filter:
+            articles_query = articles_query.filter(Rssfeed.date_added.ilike(f"%{date_added_filter}%"))
+
+        if title_filter:
+            articles_query = articles_query.filter(Rssfeed.title.ilike(f"%{title_filter}%"))
+    
+    if status_filter or date_added_filter or title_filter:
+        per_page=10000
+
+    articles = articles_query.paginate(page=page, per_page=per_page)
+
     return render_template("rss_table.html", articles=articles)
+
+
 
 @views.route("/json", methods=["GET"])
 def json_page():
@@ -170,7 +197,9 @@ def updatedb():
         "https://bishopfox.com/feeds/advisories.rss",
         "https://blog.morphisec.com/rss.xml",
         "https://securityonline.info/feed/",
-        "https://orca.security/feed/"
+        "https://orca.security/feed/",
+        "https://www.forcepoint.com/rss.xml",
+        "https://www.netskope.com/feed",
     ]
 
     rss_manager = RssManager(current_app, rss_feed_list)
