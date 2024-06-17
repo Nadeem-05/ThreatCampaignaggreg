@@ -41,7 +41,6 @@ def update_database():
             "https://securityintelligence.com/feed/",
             "https://blog.lumen.com/feed/",
             "https://www.deepinstinct.com/blog/feed",
-            "https://www.mcafee.com/blogs/other-blogs/mcafee-labs/feed",
             "https://www.imperva.com/blog/feed/",
             "https://trust.zscaler.com/blog-feed",
             "https://feeds.fortinet.com/fortinet/blog/threat-research",
